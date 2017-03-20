@@ -1,0 +1,77 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "firstParameter": {
+            "type": "string",
+            "allowedValues": [
+                "FirstValue",
+                "SecondValue"
+            ],
+            "defaultValue": "FirstValue",
+            "maxLength": 20,
+            "minLength": 10,
+            "metadata": {
+                "description": "My first parameter"
+            }
+        },
+        "secondParameter": {
+            "type": "int",
+            "allowedValues": [
+                10,
+                20
+            ],
+            "defaultValue": 10,
+            "maxValue": 20,
+            "minValue": 10,
+            "metadata": {
+                "description": "My second parameter"
+            }
+        }
+    },
+    "variables": {
+        "firstVariable": {
+            "networkName": "FirstNetwork",
+            "subnets": [
+                {
+                    "subnetName": "FrontEnd",
+                    "subnetIPRange": "10.0.0.0/24"
+                },
+                {
+                    "subnetName": "backEnd",
+                    "subnetIPRange": "10.0.1.0/24"
+                }
+            ]
+        }
+    },
+    "resources": [
+	{
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "storageaccount",
+            "apiVersion": "2015-06-15",
+            "location": "West Europe",
+            "properties": {
+                "accountType": "Standard_LRS"
+            }
+        },
+        { 
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "myPublicIPAddress",
+            "location": "West Europe",
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                    "domainNameLabel": "mypublicipaddress"
+                }
+            }
+        }
+
+    ],
+    "outputs": {
+        "myOutput": {
+            "type": "string",
+            "value": "Resource Group deployed successfully !!"
+        }
+    }
+}

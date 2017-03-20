@@ -1,0 +1,36 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 24,
+            "metadata": {
+                "Description": "Storage account name"
+            }
+        }
+    },
+    "variables": {
+        "storageApiVersion": "2015-06-15",
+        "storageAccountType": "Standard_LRS"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "apiVersion": "[variables('storageApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            }
+        }
+    ],
+    "outputs": {
+        "TemplateOutput": {
+            "type": "string",
+            "value": "[concat(parameters('storageAccountName'),' account was successfully created!!')]"
+        }
+    }
+}
+
