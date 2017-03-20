@@ -7,7 +7,7 @@ Delivering applications swiftly is one of the major challenges faced in fast-pac
 ## Instructions and Navigation
 All of the code is organized into folders. Each folder starts with a number followed by the application name. For example, Chapter02.
 
-Chapter 1,2,9,10, and 11 doesn't contain code. The code present in Chapter 5 is already present in Chapter 6,7 and 8 in form of blocks.
+Chapters 01,02,09,10, and 11 doesn't contain code. The code present in Chapter 05 is already present in Chapters 06,07 and 08 in form of blocks.
 
 The code will look like the following:
 ```
