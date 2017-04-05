@@ -1,0 +1,53 @@
+﻿@model IEnumerable<OnlinePharmacy.Models.Sale>
+
+@{
+    ViewBag.Title = "All sales..";
+}
+
+<h2>All sales</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.SaleID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PatientName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DoctorName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SaleDate)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SaleID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PatientName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DoctorName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SaleDate)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.SaleID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.SaleID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.SaleID }) |
+                @Html.ActionLink("Edit Medicines", "Index", "SaleItems", new { id = item.SaleID }, null)
+            </td>
+        </tr>
+    }
+
+</table>

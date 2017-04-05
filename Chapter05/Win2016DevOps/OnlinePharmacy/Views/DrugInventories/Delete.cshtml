@@ -1,0 +1,73 @@
+﻿@model OnlinePharmacy.Models.DrugInventory
+
+@{
+    ViewBag.Title = "Delete a drug inventory";
+}
+
+<h2>Delete Inventory</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Drug Inventory</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.BatchNo)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BatchNo)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Quantity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Quantity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PruchaseDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PruchaseDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ManufatureDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ManufatureDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ExpiryDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ExpiryDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Drug.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Drug.Name)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

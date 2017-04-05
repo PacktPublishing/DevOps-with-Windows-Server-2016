@@ -1,0 +1,88 @@
+﻿@model OnlinePharmacy.Models.Sale
+
+@{
+    ViewBag.Title = "Details of sale..";
+}
+
+<h2>Details of sale</h2>
+
+<div>
+    <h4>Sale</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.SaleID)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.SaleID)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.PatientName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PatientName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DoctorName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DoctorName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SaleDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SaleDate)
+        </dd>
+
+    </dl>
+</div>
+<table class="table">
+    <tr>
+        <th>
+            SalesItemID
+        </th>
+        <th>
+            Patient Name
+        </th>
+        <th>
+            Drug
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Rate
+        </th>
+    </tr>
+
+    @foreach (var item in Model.SaleItems)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SaleItemID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sale.PatientName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Drug.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rate)
+            </td>
+        </tr>
+    }
+</table>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.SaleID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
