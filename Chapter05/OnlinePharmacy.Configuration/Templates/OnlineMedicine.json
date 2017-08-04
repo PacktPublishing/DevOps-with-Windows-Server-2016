@@ -1,0 +1,1106 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "OnlineMedicineOMS",
+      "metadata": {
+        "description": "OMS workspace Name"
+      }
+    },
+    "pullserverPort": {
+      "type": "string",
+      "defaultValue": "9100"
+
+    },
+    "webAppPort": {
+      "type": "string",
+      "defaultValue": "8080",
+      "metadata": {
+        "description": "Port number for web application"
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "om",
+      "metadata": {
+        "description": "om - shot form for Online Medicine. used to uniquify names"
+      }
+    },
+
+    "deployLocation": {
+      "type": "string",
+      "defaultValue": "West Europe",
+      "metadata": {
+        "description": "Location for provisioning of resources"
+      }
+    },
+    "countVMs": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "The name of the new Web application virtual machines."
+      }
+    },
+
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D1",
+      "metadata": {
+        "description": "The size of virtual machines."
+      }
+    },
+    "osSKU": {
+      "type": "string",
+      "defaultValue": "2016-Datacenter-with-Containers",
+      "metadata": {
+        "description": "Image SKU of virtual machines"
+      }
+    },
+    "databaseName": {
+      "type": "string",
+      "defaultValue": "medicine",
+      "metadata": {
+        "description": "Name of SQL server database"
+      }
+    },
+    "sqlUserName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SQL server username passed from Azure key vault"
+      }
+    },
+    "sqlPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SQL server password passed from Azure key vault"
+      }
+    },
+    "vstsUserName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VSTS username passed from Azure key vault"
+      }
+    },
+    "vstsPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VSTS password passed from Azure key vault"
+      }
+    },
+    "vmUserName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Virtual Machine username passed from Azure key vault"
+      }
+    },
+    "vmPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Virtual Machine password passed from Azure key vault"
+      }
+    },
+    "WorkspaceID": {
+      "type": "securestring",
+      "metadata": {
+        "description": "OMS workspace ID passed from Azure key vault"
+      }
+    },
+    "sasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Storage account SAS token passed from Azure key vault"
+      }
+    },
+    "storageKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Storage Account key passed from Azure key vault"
+      }
+    },
+    "storageName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Storage account name passed from Azure key vault"
+      }
+    },
+    "sqlServerName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SQL Server name passed from Azure key vault"
+      }
+    },
+    "wsResourceGroup": {
+      "type": "string",
+      "defaultValue": "win2016devops",
+      "metadata": {
+        "description": "Name of resource group hosting key vault, storage account and OMS workspace"
+      }
+    },
+    "collation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": {
+        "description": "The database collation for governing the proper use of characters."
+      }
+    },
+    "edition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "The type of database to create."
+      }
+    },
+    "maxSizeBytes": {
+      "type": "string",
+      "defaultValue": "1073741824",
+      "metadata": {
+        "description": "The maximum size, in bytes, for the database"
+      }
+    },
+    "pullserverRegKey": {
+      "type": "string",
+      "defaultValue": "11111111-1111-1111-1111-111111111111",
+      "metadata": {
+        "description": "GU"
+      }
+    },
+    "requestedServiceObjectiveName": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "metadata": {
+        "description": "Describes the performance level for Edition"
+      }
+    }
+  },
+  "variables": {
+    "storageAccountName": "[concat(parameters('skuName'), uniqueString(resourceGroup().id))]",
+    "storageApiVersion": "2015-05-01-preview",
+    "storageType": "Standard_LRS",
+
+    "networkName": "[concat(parameters('skuName'), '-network')]",
+    "networkApiVersion": "2015-05-01-preview",
+    "networkAddressSpace": "10.0.0.0/16",
+
+    "publicIpName": "[concat(parameters('skuName'), '-publicIP')]",
+    "publicIPApiVersion": "2015-05-01-preview",
+    "PublicIpType": "Static",
+
+    "nicName": "[concat(parameters('skuName'), '-nic')]",
+    "nicApiVersion": "2015-05-01-preview",
+    "nicIpType": "Dynamic",
+
+    "vmName": "vm",
+    "vmApiVersion": "2015-05-01-preview",
+
+    "NSGName": "[concat(parameters('skuName'),'-NSG')]",
+    "NSGApiVersion": "2015-05-01-preview",
+
+    "accountid": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('wsResourceGroup'),'/providers/','Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]",
+    "storageAccountNameScripts": "scriptrepo",
+    "ScriptResourceGroupName": "skuscripts",
+    "storageId": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',variables('ScriptResourceGroupName'),'/providers/','Microsoft.Storage/storageAccounts/',variables('storageAccountNameScripts'))]",
+    "sqlServerName": "[concat(parameters('sqlServerName'), '-', parameters('skuName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "webappAVSet",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[parameters('deployLocation')]"
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "location": "[parameters('deployLocation')]",
+
+      "properties": {
+        "accountType": "[variables('storageType')]"
+      }
+    },
+    {
+      "name": "[variables('networkName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[parameters('deployLocation')]",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+      ],
+
+      "apiVersion": "[variables('networkApiVersion')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('networkAddressSpace')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "subnetad",
+            "properties": {
+              "addressPrefix": "10.0.0.0/24"
+
+
+            }
+          },
+
+          {
+            "name": "frontend",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NSGName'))]"
+
+              }
+            }
+          }
+
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('NSGApiVersion')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('NSGName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+
+        "skuName": "[parameters('skuName')]"
+
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "rule80",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "rule443",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "rule1433",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1433",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 103,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "rulePSUnsecured",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5985",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 104,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "rulePSsecured",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5986",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 105,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "RDP",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 106,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "docker",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "2375",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 107,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "dockers",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "2376",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 108,
+              "direction": "Inbound"
+            }
+          },
+
+          {
+            "name": "pullserver",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('pullserverPort')]",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 109,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "webserver",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('webAppPort')]",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          }
+
+
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('publicIPApiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat('pipPS',variables('publicIpName'))]",
+      "location": "[parameters('deployLocation')]",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+
+        "dnsSettings": {
+          "domainNameLabel": "[concat(parameters('skuName'), 'pullserver01')]"
+        }
+      }
+    },
+    {
+      "name": "[concat('nicPS',variables('nicName'))]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[parameters('deployLocation')]",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "dependsOn": [
+
+        "[concat('Microsoft.Network/virtualNetworks/', variables('networkName'))]",
+
+        "[concat('Microsoft.Network/publicIPAddresses/','pipPS',variables('publicIpName'))]"
+      ],
+      "apiVersion": "[variables('nicApiVersion')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfigps",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkName'), 'frontend')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat('pipPS',variables('publicIpName')))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('vmApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('vmName'),'-pulls')]",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "location": "[parameters('deployLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces',concat('nicPS',variables('nicName')))]",
+        "[resourceId('Microsoft.Sql/servers',variables('sqlServerName'))]",
+        "[resourceId('Microsoft.Sql/servers/databases',variables('sqlServerName'), parameters('databaseName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('vmName'),'-pulls')]",
+          "adminUsername": "[parameters('vmUserName')]",
+          "adminPassword": "[parameters('vmPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2016-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+              "uri": "[concat('http://',variables('storageAccountName') ,'.blob.core.windows.net/vhds0/','psvmdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "vhd": {
+                "uri": "[concat('http://',variables('storageAccountName') ,'.blob.core.windows.net/vhds0/', 'pullserver-data-disk1.vhd')]"
+              },
+              "name": "pullserver-data-disk1",
+              "caching": "None",
+              "diskSizeGB": "1023",
+              "lun": 0,
+              "createOption": "empty"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('nicPS',variables('nicName')))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'-pulls','/powershellscript')]",
+      "apiVersion": "2015-05-01-preview",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "location": "[parameters('deployLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/',variables('vmName'),'-pulls')]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmName'),'-pulls') ,'dscscript')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.4",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "https://win2016devops1.blob.core.windows.net/armt/pullserver.ps1",
+            "https://win2016devops1.blob.core.windows.net/armt/IISInstall.ps1",
+            "https://win2016devops1.blob.core.windows.net/armt/OnlinePharmacy.sql"
+          ],
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File pullserver.ps1', ' -port ', parameters('pullserverPort') , ' -sqlUsername ', parameters('sqlUserName') , ' -sqlPassword ', parameters('sqlPassword') , ' -sqlDatabaseName ', parameters('databaseName') , ' -servername ', variables('sqlServerName'), ' -webport ' , parameters('webAppPort') , ' -regKey ' , parameters('pullserverRegKey') )]"
+          
+        },
+        "protectedSettings": {
+          "storageAccountName": "[parameters('storageName')]",
+          "storageAccountKey": "[parameters('storageKey')]"
+
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'-pulls','/dscscript')]",
+      "apiVersion": "2015-05-01-preview",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+
+      "location": "[parameters('deployLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/',variables('vmName'),'-pulls')]"
+
+      ],
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.13",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "ModulesUrl": "[concat('https://win2016devops1.blob.core.windows.net/armt','/InstallContainer.ps1.zip')]",
+          "ConfigurationFunction": "InstallContainer.ps1\\CreateContainer",
+          "SasToken": "[parameters('sasToken')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'-pulls','/omsscript')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/',variables('vmName'),'-pulls')]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmName'),'-pulls') ,'powershellscript')]"
+
+      ],
+
+      "properties": {
+        "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+        "type": "MicrosoftMonitoringAgent",
+        "typeHandlerVersion": "1.0",
+        "settings": {
+          "workspaceId": "[parameters('WorkspaceID')]"
+        },
+        "protectedSettings": {
+          "workspaceKey": "[listKeys(variables('accountid'),'2015-11-01-preview').primarySharedKey]"
+        }
+
+      }
+
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "lbPublicIP",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(parameters('skuName'), 'ws2016devops')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "name": "containerLB",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses','lbPublicIP')]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "ContainerLBFE",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses','lbPublicIP')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "ContainerLBBE"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "WebAppList",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceid('Microsoft.Network/loadBalancers/frontendIPConfigurations','containerLB','ContainerLBFE')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceid('Microsoft.Network/loadBalancers/backendAddressPools', 'containerLB','ContainerLBBE')]"
+              },
+              "probe": {
+                "id": "[resourceid('Microsoft.Network/loadBalancers/probes', 'containerLB','WebLBPROBE')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": "[parameters('webAppPort')]",
+              "backendPort": "[parameters('webAppPort')]",
+              "enableFloatingIP": true
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "WebLBPROBE",
+            "properties": {
+              "protocol": "Http",
+              "port": "[parameters('webAppPort')]",
+              "requestPath": "/newapp/Index",
+              "intervalInSeconds": "100",
+              "numberOfProbes": "100"
+            }
+          }
+        ],
+        "inboundNatRules": [
+          {
+            "name": "NAT0",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceid('Microsoft.Network/loadBalancers/frontendIPConfigurations','containerLB','ContainerLBFE')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": "3389",
+              "backendPort": 3389,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "NAT1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceid('Microsoft.Network/loadBalancers/frontendIPConfigurations','containerLB','ContainerLBFE')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": "13389",
+              "backendPort": 3389,
+              "enableFloatingIP": false
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "apiVersion": "[variables('publicIPApiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat('pip',copyIndex(1),variables('publicIpName'))]",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "location": "[parameters('deployLocation')]",
+      "copy": {
+        "count": "[parameters('countVMs')]",
+        "name": "piploop"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('PublicIpType')]",
+        "dnsSettings": {
+          "domainNameLabel": "[concat('webapponlmed', parameters('skuName'), copyIndex(1))]"
+        }
+      }
+    },
+    {
+      "name": "[concat('nic',copyIndex(1),variables('nicName'))]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[parameters('deployLocation')]",
+      "tags": {
+        "skuName": "[parameters('skuName')]"
+      },
+      "copy": {
+        "count": "[parameters('countVMs')]",
+        "name": "nicloop"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/','pip',copyIndex(1),variables('publicIpName'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', variables('networkName'))]",
+        "[concat('Microsoft.Network/loadBalancers/','containerLB')]",
+        "[resourceId('Microsoft.Compute/availabilitySets', 'webappAVSet')]"
+
+      ],
+      "apiVersion": "[variables('nicApiVersion')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "privateIPAllocationMethod": "[variables('nicIpType')]",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkName'), 'frontend')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat('pip',copyIndex(1),variables('publicIpName')))]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[resourceid('Microsoft.Network/loadBalancers/backendAddressPools', 'containerLB','ContainerLBBE')]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules','containerLB',concat('NAT', copyindex()))]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('vmApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('vmName'),copyIndex(1))]",
+      "location": "[parameters('deployLocation')]",
+      "tags": {
+
+        "skuName": "[parameters('skuName')]"
+      },
+      "copy": {
+        "count": "[parameters('countVMs')]",
+        "name": "vmloop"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces',concat('nic',copyIndex(1),variables('nicName')))]",
+        "[resourceId('Microsoft.Compute/availabilitySets', 'webappAVSet')]"
+
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', 'webappAVSet')]"
+        },
+        "osProfile": {
+          "computerName": "[concat('vm',copyIndex(1))]",
+          "adminUsername": "[parameters('vmUserName')]",
+          "adminPassword": "[parameters('vmPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('osSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+              "uri": "[concat('http://',variables('storageAccountName') ,'.blob.core.windows.net/vhds0/','vm',copyindex(1),'osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('nic',copyIndex(1),variables('nicName')))]"
+            }
+          ]
+        }
+      }
+    },
+      {
+      "name": "[concat(variables('vmName'),copyIndex(1),'/powershellscript')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "[parameters('deployLocation')]",
+      "tags": {
+
+        "skuName": "[parameters('skuName')]"
+      },
+      "copy": {
+        "count": "[parameters('countVMs')]",
+        "name": "scriptloop"
+      },
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/',variables('vmName'),copyIndex(1))]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmName'),'-pulls') ,'powershellscript')]"
+
+      ],
+
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.4",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "https://win2016devops1.blob.core.windows.net/armt/ContainerConfig.ps1",
+            "https://win2016devops1.blob.core.windows.net/armt/dockerfile",
+            "https://win2016devops1.blob.core.windows.net/armt/lcm.ps1",
+            "https://win2016devops1.blob.core.windows.net/armt/Deployment.zip",
+            "https://win2016devops1.blob.core.windows.net/armt/ChangeConnectionString.ps1"
+          ],
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ContainerConfig.ps1 ', '-username ',parameters('vmUserName'),' -password ',parameters('vmPassword'), ' -pullip ', reference(concat('pipPS',variables('publicIpName'))).ipAddress, ' -regKey ', parameters('pullserverRegKey'), ' -port ', parameters('pullserverPort'), ' -sqlUsername ', parameters('sqlUserName'),' -sqlPassword ', parameters('sqlPassword') ,' -webport ', parameters('webAppPort'), ' -sqlServer ', variables('sqlServerName'), ' -databaseName ', parameters('databaseName') )]"
+          
+
+        },
+        "protectedSettings": {
+          "storageAccountName": "[parameters('storageName')]",
+          "storageAccountKey": "[parameters('storageKey')]"
+
+        }
+
+      }
+    },
+
+
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),copyIndex(1),'/omsscript')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/',variables('vmName'),copyIndex(1))]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmName'),copyIndex(1)),'powershellscript')]"
+
+      ],
+      "copy": {
+        "count": "[parameters('countVMs')]",
+        "name": "omsloop"
+      },
+      "properties": {
+        "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+        "type": "MicrosoftMonitoringAgent",
+        "typeHandlerVersion": "1.0",
+        "settings": {
+          "workspaceId": "[parameters('WorkspaceID')]"
+        },
+        "protectedSettings": {
+          "workspaceKey": "[listKeys(variables('accountid'),'2015-11-01-preview').primarySharedKey]"
+        }
+
+      }
+
+    },
+    {
+      "name": "[variables('sqlServerName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "SqlServer"
+      },
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses',concat('pip1',variables('publicIpName')))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses',concat('pip2',variables('publicIpName')))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses',concat('pipPS',variables('publicIpName')))]"
+
+      ],
+      "properties": {
+        "administratorLogin": "[parameters('sqlUserName')]",
+        "administratorLoginPassword": "[parameters('sqlPassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "[parameters('databaseName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Database"
+          },
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[variables('sqlserverName')]"
+          ],
+          "properties": {
+            "edition": "[parameters('edition')]",
+            "collation": "[parameters('collation')]",
+            "maxSizeBytes": "[parameters('maxSizeBytes')]",
+            "requestedServiceObjectiveName": "[parameters('requestedServiceObjectiveName')]"
+          }
+        },
+        {
+          "type": "firewallrules",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[variables('sqlServerName')]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          }
+        },
+        {
+          "type": "firewallrules",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[variables('sqlServerName')]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "webapp1",
+          "properties": {
+            "endIpAddress": "[reference(concat('pip1',variables('publicIpName'))).ipAddress]",
+            "startIpAddress": "[reference(concat('pip1',variables('publicIpName'))).ipAddress]"
+          }
+        },
+        {
+          "type": "firewallrules",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[variables('sqlServerName')]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "webapp2",
+          "properties": {
+            "endIpAddress": "[reference(concat('pip2',variables('publicIpName'))).ipAddress]",
+            "startIpAddress": "[reference(concat('pip2',variables('publicIpName'))).ipAddress]"
+          }
+        },
+        {
+          "type": "firewallrules",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[variables('sqlServerName')]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "pullserver",
+          "properties": {
+            "endIpAddress": "[reference(concat('pipPS',variables('publicIpName'))).ipAddress]",
+            "startIpAddress": "[reference(concat('pipPS',variables('publicIpName'))).ipAddress]"
+          }
+        }
+      ]
+    }
+
+  
+  ],
+  "outputs": {
+    "webappPort": {
+      "type": "string",
+      "value": "[parameters('webAppPort')]"
+    },
+    "pullserverPort": {
+      "type": "string",
+      "value": "[parameters('pullserverPort')]"
+    },
+    "numberofvms": {
+      "type": "int",
+      "value": "[parameters('countVMs')]"
+    },
+    "vmsize": {
+      "type": "string",
+      "value": "[parameters('vmSize')]"
+    },
+    "ossku": {
+      "type": "string",
+      "value": "[parameters('osSKU')]"
+    },
+    "databaseName": {
+      "type": "string",
+      "value": "[parameters('databaseName')]"
+    },
+    "sqlServer": {
+      "type": "string",
+      "value": "[variables('sqlServerName')]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[resourceGroup().name]"
+    },
+    "deployLocation": {
+      "type": "string",
+      "value": "[resourceGroup().location]"
+    },
+    "skuName": {
+      "type": "string",
+      "value": "[parameters('skuName')]"
+    },
+    "pullServerPublicIPAddress": {
+      "type": "string",
+      "value": "[reference(concat('pipPS',variables('publicIpName'))).ipAddress]"
+    },
+    "VM01PublicIPAddress": {
+      "type": "string",
+      "value": "[reference(concat('pip1',variables('publicIpName'))).ipAddress]"
+    },
+    "VM02PublicIPAddress": {
+      "type": "string",
+      "value": "[reference(concat('pip2',variables('publicIpName'))).ipAddress]"
+    },
+    "loadBalancerPublicIPAddress": {
+      "type": "string",
+      "value": "[reference('lbPublicIP').ipAddress]"
+    },
+    "storageName": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    },
+    "nicNameforVM1": {
+      "type": "string",
+      "value": "[concat('nic1',variables('nicName'))]"
+    },
+    "nicNameforVM2": {
+      "type": "string",
+      "value": "[concat('nic2',variables('nicName'))]"
+    },
+    "lbfrontendIPConfiguration": {
+      "type": "string",
+      "value": "[reference('containerLB').frontendIPConfigurations[0].name]"
+    },
+    "lbbackendAddressPool": {
+      "type": "string",
+      "value": "[reference('containerLB').backendAddressPools[0].name]"
+    },
+    "lbloadBalancingRules": {
+      "type": "string",
+      "value": "[reference('containerLB').loadBalancingRules[0].name]"
+    },
+    "lbinboundNatRule1": {
+      "type": "string",
+      "value": "[reference('containerLB').inboundNatRules[0].name]"
+    },
+    "lbinboundNatRule2": {
+      "type": "string",
+      "value": "[reference('containerLB').inboundNatRules[1].name]"
+    },
+    "networkSecurityGroupName": {
+      "type": "string",
+      "value": "[variables('NSGName')]"
+    },
+    "vmUserName": {
+      "type": "string",
+      "value": "[parameters('vmUserName')]"
+    },
+    "vmPassword": {
+      "type": "string",
+      "value": "[parameters('vmPassword')]"
+    }
+  }
+}

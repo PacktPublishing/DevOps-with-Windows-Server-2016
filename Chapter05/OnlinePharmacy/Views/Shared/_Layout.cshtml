@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - DevOps with Windows Server 2016 sample application</title>
+    <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/modernizr-2.6.2.js"></script>
+</head>
+<body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+
+        <div class="container">
+            <div class="navbar-header">
+
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <h2 style="color:floralwhite;font:bold;">Online Pharmacy</h2>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav"></ul>
+            </div>
+        </div>
+    </div>
+    <ul class="nav nav-tabs">
+        <li><a href="#">About us</a></li>
+        <li><a href="#">Contact us</a></li>
+    </ul>
+
+    <div class="row">
+        <div class="col-sm-3">
+            @Html.ActionLink("Medical Store Home", "Index", "Index", new { area = "" }, new { @class = "btn btn-block btn-default btn-lg", @style = "margin:10px" })
+            @Html.ActionLink("Drug Master", "Index", "Drugs", new { area = "" }, new { @class = "btn btn-block btn-default btn-lg", @style = "margin:10px" })
+            @Html.ActionLink("Drug Inventory", "Index", "DrugInventories", new { area = "" }, new { @class = "btn btn-block btn-default btn-lg", @style = "margin:10px" })
+            @Html.ActionLink("All Sales", "Index", "Sales", new { area = "" }, new { @class = "btn btn-block btn-default btn-lg", @style = "margin:10px" })
+        </div>
+        <div class="col-sm-9">@RenderBody()</div>
+    </div>
+    <hr />
+    <footer>
+        <p style="bottom:10px; text-align:center;">&copy; @DateTime.Now.Year - DevOps with Windows Server 2016 sample application</p>
+    </footer>
+
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+</body>
+</html>

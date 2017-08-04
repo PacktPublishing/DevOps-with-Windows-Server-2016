@@ -1,0 +1,97 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlUserName": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "sqlUserName"
+      }
+    },
+    "sqlPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "sqlPassword"
+      }
+    },
+    "vstsUserName": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "vstsUserName"
+      }
+    },
+    "vstsPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "vstsPassword"
+      }
+    },
+    "vmUserName": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "vmUserName"
+      }
+    },
+    "vmPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "vmPassword"
+      }
+    },
+    "WorkspaceID": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "WorkspaceID"
+      }
+    },
+
+    "sasToken": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "sasToken"
+      }
+    },
+
+    "storageKey": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "storageKey"
+      }
+    },
+
+    "storageName": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "storageName"
+      }
+    },
+    "sqlServerName": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/af75f52f-1ab4-4bec-bed8-4d3d9b8f7eab/resourceGroups/win2016devops/providers/Microsoft.KeyVault/vaults/OnlineMedicineVault"
+        },
+        "secretName": "sqlServerName"
+      }
+    }
+    }
+}

@@ -1,0 +1,332 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the key vault"
+      }
+    },
+    "tenantId": {
+      "type": "string",
+      "metadata": {
+        "description": "Tenant ID for the subscription for access to the vault"
+      }
+    },
+    "sqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of Azure SQL server"
+      }
+    },
+    "objectId": {
+      "type": "string",
+      "metadata": {
+        "description": "Guid id of service principal"
+      }
+    },
+    "keysPermissions": {
+      "type": "array",
+      "defaultValue": [ "all" ],
+      "metadata": {
+        "description": "Permissions to grant user to keys in the vault."
+      }
+    },
+    "secretsPermissions": {
+      "type": "array",
+      "defaultValue": [ "all" ],
+      "metadata": {
+        "description": "Permissions to grant user to secrets in the vault."
+      }
+    },
+    "vaultSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "SKU for the vault"
+      }
+    },
+    "enabledForDeployment": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Specifies if the vault is enabled for VM or Service Fabric deployment"
+      }
+    },
+    "enabledForTemplateDeployment": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Specifies if the vault is enabled for ARM template deployment"
+      }
+    },
+    "enableVaultForVolumeEncryption": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Specifies if the vault is enabled for volume encryption"
+      }
+    },
+    "sqlUserName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SQL username secret to store in the vault"
+      }
+    },
+
+    "sqlPasswordName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SQL password secret to store in the vault"
+      }
+    },
+
+    "VMUserName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VM username secret to store in the vault"
+      }
+    },
+
+    "VMPasswordName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VM password secret to store in the vault"
+      }
+    },
+
+    "VSTSUserName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VSTS username secret to store in the vault"
+      }
+    },
+
+    "VSTSPasswordName": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VSTS password secret to store in the vault"
+      }
+    },
+
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "devops2016ws",
+      "metadata": {
+        "description": "OMS workspace name"
+      }
+    },
+    
+    "sasToken": {
+      "type": "string",
+      "metadata": {
+        "description": "storage account SAS token"
+      }
+    },
+    "storageKey": {
+      "type": "string",
+      "metadata": {
+        "description": "storage account Key"
+      }
+    },
+    "storageName": {
+      "type": "string",
+      "defaultValue": "win2016devops",
+      "metadata": {
+        "description": "storage account Name"
+      }
+    },
+    "deployLocation": {
+      "type": "string",
+      "defaultValue": "West Europe"
+    },
+    "serviceTier": {
+      "type": "string",
+      "defaultValue": "Free",
+      "allowedValues": [
+        "Free",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Service Tier: Free, Standard, or Premium"
+      }
+    }
+  },
+  "variables": {
+    
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-11-01-preview",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[parameters('workspaceName')]",
+      "location": "[parameters('deployLocation')]",
+      "properties": {
+        "sku": {
+          "Name": "[parameters('serviceTier')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "[parameters('keyVaultName')]",
+      "apiVersion": "2015-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "KeyVault"
+      },
+      "properties": {
+        "enabledForDeployment": "[parameters('enabledForDeployment')]",
+        "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+        "enabledForVolumeEncryption": "[parameters('enableVaultForVolumeEncryption')]",
+        "tenantId": "[parameters('tenantId')]",
+        "accessPolicies": [
+          {
+            "tenantId": "[parameters('tenantId')]",
+            "objectId": "[parameters('objectId')]",
+            "permissions": {
+              "keys": "[parameters('keysPermissions')]",
+              "secrets": "[parameters('secretsPermissions')]"
+            }
+          }
+        ],
+        "sku": {
+          "name": "[parameters('vaultSku')]",
+          "family": "A"
+        }
+      },
+      "resources": [
+        {
+          "type": "secrets",
+          "name": "sqlusername",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('sqlUserName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "sqlpassword",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('sqlPasswordName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "vmusername",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('VMUserName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "vmpassword",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('VMPasswordName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "vstsusername",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('VSTSUserName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "vstspassword",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('VSTSPasswordName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "WorkspaceID",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[reference(parameters('workspaceName')).customerId]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "sasToken",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('sasToken')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "storageKey",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('storageKey')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "storageName",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('storageName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        },
+        {
+          "type": "secrets",
+          "name": "sqlServerName",
+          "apiVersion": "2015-06-01",
+          "properties": {
+            "value": "[parameters('sqlServerName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+          ]
+        }
+      ]
+    }
+  
+  ],
+  "outputs": {
+  }
+}
