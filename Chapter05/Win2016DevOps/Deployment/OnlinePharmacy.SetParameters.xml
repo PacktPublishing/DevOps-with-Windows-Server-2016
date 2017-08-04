@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<parameters>
-  <setParameter name="IIS Web Application Name" value="#{DestinationWebSite}#" />
-  <setParameter name="DefaultConnection-Web.config Connection String" value="Data Source=(LocalDb)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\aspnet-OnlinePharmacy-20160803041637.mdf;Initial Catalog=aspnet-OnlinePharmacy-20160803041637;Integrated Security=True" />
-  <setParameter name="medicineEntities-Web.config Connection String" value="metadata=res://*/Models.PharmacyModel.csdl|res://*/Models.PharmacyModel.ssdl|res://*/Models.PharmacyModel.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=tcp:devopswin2016-dev.database.windows.net,1433;initial catalog=medicine;Password=citynext!1234;User ID=citynextadmin;MultipleActiveResultSets=True;App=EntityFramework&quot;" />
-</parameters>

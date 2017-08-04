@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<parameters>
-  <parameter description="Name of IIS website" name="IIS Web Application Name" tags="" defaultvalue="#{DestinationWebSite}#">
-    <parameterentry match="/parameters/setParameter/add[@key='IIS Web Application Name']/@value" scope="\\SetParameters.xml$" kind="XmlFile">
-    </parameterentry>
-  </parameter>
-</parameters>
